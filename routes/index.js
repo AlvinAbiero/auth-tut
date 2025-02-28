@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const passport = require("passport");
-const passwordUtils = require("../lib/passwordUtils");
+const genPassword = require("../lib/passwordUtils").genPassword;
 const connection = require("../config/database");
+const { isAuth } = require("./authMiddleware");
 const User = connection.models.User;
 
 /**
@@ -9,10 +10,33 @@ const User = connection.models.User;
  */
 
 // TODO
-router.post("/login", passport.authenticate("local"), (req, res, next) => {});
+router.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/login-failure",
+    successRedirect: "login-success",
+  })
+);
 
 // TODO
-router.post("/register", (req, res, next) => {});
+router.post("/register", (req, res, next) => {
+  const saltHash = genPassword(req.body.pw);
+
+  const salt = saltHash.salt;
+  const hash = saltHash.hash;
+
+  const newUser = new User({
+    username: req.body.uname,
+    hash: hash,
+    salt: salt,
+  });
+
+  newUser.save().then((user) => {
+    console.log(user);
+  });
+
+  res.redirect("/login");
+});
 
 /**
  * -------------- GET ROUTES ----------------
@@ -50,17 +74,18 @@ router.get("/register", (req, res, next) => {
  *
  * Also, look up what behaviour express session has without a maxage set
  */
-router.get("/protected-route", (req, res, next) => {
-  // This is how you check if a user is authenticated and protect a route.  You could turn this into a custom middleware to make it less redundant
-  if (req.isAuthenticated()) {
-    res.send(
-      '<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>'
-    );
-  } else {
-    res.send(
-      '<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>'
-    );
-  }
+router.get("/protected-route", isAuth, (req, res, next) => {
+  res.send("You made it to the route");
+
+  // if (req.isAuthenticated()) {
+  //   res.send(
+  //     '<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>'
+  //   );
+  // } else {
+  //   res.send(
+  //     '<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>'
+  //   );
+  // }
 });
 
 // Visiting this route logs the user out
