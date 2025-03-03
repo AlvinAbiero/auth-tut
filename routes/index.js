@@ -2,7 +2,7 @@ const router = require("express").Router();
 const passport = require("passport");
 const genPassword = require("../lib/passwordUtils").genPassword;
 const connection = require("../config/database");
-const { isAuth } = require("./authMiddleware");
+const { isAuth, isAdmin } = require("./authMiddleware");
 const User = connection.models.User;
 
 /**
@@ -29,6 +29,7 @@ router.post("/register", (req, res, next) => {
     username: req.body.uname,
     hash: hash,
     salt: salt,
+    admin: true,
   });
 
   newUser.save().then((user) => {
@@ -86,6 +87,9 @@ router.get("/protected-route", isAuth, (req, res, next) => {
   //     '<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>'
   //   );
   // }
+});
+router.get("/admin-route", isAdmin, (req, res, next) => {
+  res.send("You made it to the admin route");
 });
 
 // Visiting this route logs the user out
