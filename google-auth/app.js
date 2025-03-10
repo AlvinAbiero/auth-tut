@@ -37,6 +37,39 @@ require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile"] })
+);
+app.get(
+  "/auth/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+    successRedirect: "/protected",
+  })
+);
+
+app.get("/logout", (req, res) => {
+  req.logout();
+  res.redirect("/login");
+});
+
+app.get("/protected", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.render("protected", {
+      name: req.user.name,
+    });
+  } else {
+    res.status(401).send({ msg: "Unauthorized" });
+  }
+  console.log(req.session);
+  console.log(req.user);
+});
+
 const PORT = config.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
