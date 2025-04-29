@@ -5,6 +5,7 @@ const { hashSync, compareSync } = require("bcryptjs");
 const UserModel = require("./config/database");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
+const { issueJWT } = require("./utils/jwt");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -58,19 +59,13 @@ app.post("/login", (req, res) => {
       });
     }
 
-    const payload = {
-      username: user.username,
-      id: user._id,
-    };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const jwt = issueJWT(user);
 
     return res.status(200).send({
       success: true,
       message: "Logged in successfully!",
-      token: "Bearer " + token,
+      token: jwt.token,
+      expiresIn: jwt.expires,
     });
   });
 });

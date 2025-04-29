@@ -8,7 +8,12 @@ const utils = require("../lib/utils");
 router.get(
   "/protected",
   passport.authenticate("jwt", { session: false }),
-  (req, res, next) => {}
+  (req, res, next) => {
+    res.status(200).json({
+      success: true,
+      message: "You have been successfully Authorized!",
+    });
+  }
 );
 
 // TODO

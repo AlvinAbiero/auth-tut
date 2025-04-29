@@ -1,6 +1,6 @@
 const { default: base64url } = require("base64url");
 const crypto = require("crypto");
-const signatureFunction = crypto.createSign("RsA-SHA256");
+const signatureFunction = crypto.createSign("RSA-SHA256");
 const verifyFunction = crypto.createVerify("RSA-SHA256");
 const fs = require("fs");
 
